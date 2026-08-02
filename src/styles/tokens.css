@@ -169,6 +169,21 @@
   --header-height: 56px;
   --panel-width: 380px;
   --hairline: 1px;
+
+  /* ════════════════════════════════════════════════════════════════
+   * 经典 Windows 工具面板皮肤（左侧参数面板专用，见 ParamPanel.vue）
+   * 仅作用于 .panel 内部，右侧预览 / 弹窗不受影响。
+   * ════════════════════════════════════════════════════════════════ */
+  --win-face: #d4d0c8; /* 3D 灰面板面 */
+  --win-face-2: #c8c4ba; /* 略深，用于按下/选中态 */
+  --win-window: #ffffff; /* 窗口 / 输入白底 */
+  --win-hilite: #ffffff; /* 高光（亮斜角） */
+  --win-light: #e6e4df; /* 次高光 */
+  --win-shadow: #808080; /* 阴影（暗斜角） */
+  --win-dkshadow: #404040; /* 最深阴影 */
+  --win-text: #000000;
+  --win-text-dim: #333333;
+  --win-font: Tahoma, 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
 }
 
 @media (min-resolution: 2dppx) {
@@ -217,5 +232,16 @@
     --color-border-warning: #f97316;
 
     --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.1);
+
+    /* 经典 Windows 皮肤 · 暗色 */
+    --win-face: #2b2b2b;
+    --win-face-2: #242424;
+    --win-window: #1f1f1f;
+    --win-hilite: #5a5a5a;
+    --win-light: #3a3a3a;
+    --win-shadow: #0f0f0f;
+    --win-dkshadow: #000000;
+    --win-text: #e8e8e8;
+    --win-text-dim: #b0b0b0;
   }
 }
