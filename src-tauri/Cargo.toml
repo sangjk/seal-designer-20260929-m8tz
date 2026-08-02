@@ -1,0 +1,40 @@
+[package]
+# ★ ASCII 包名 —— 与用户可见产品名「印章生成器」严格分离（ADR-004 / 问题 001、003）
+name = "seal-designer"
+version = "1.0.0"
+description = "Seal Designer desktop application"
+authors = ["sangkl"]
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "seal_designer_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+# rustls-tls：避免 Windows 上的 OpenSSL 依赖
+reqwest = { version = "0.12", default-features = false, features = [
+  "rustls-tls",
+  "json",
+  "stream",
+] }
+md-5 = "0.10"
+hmac = "0.12"
+sha2 = "0.10"
+base64 = "0.22"
+thiserror = "1"
+dirs = "5"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

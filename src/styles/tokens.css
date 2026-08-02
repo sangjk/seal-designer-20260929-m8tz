@@ -1,0 +1,221 @@
+/*
+ * Paper Design 全量设计 Token（架构设计 §1.2 / ADR-008 / 规则/UI规则.md）。
+ *
+ * ★ 纪律：
+ *   1. 组件中**禁止**出现任何裸 hex / rgb 值，一律引用本文件的 Token。
+ *      唯一豁免：`src/core/palette.ts` 的 7 色印色（业务数据，非 UI Token）。
+ *   2. 暗色模式**自动**解析 —— 组件永远不手工切换颜色，只引用语义 Token。
+ *   3. 圆角只允许取自 --radius-* 标尺；阴影优先用 outline 替代。
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* ══════════════ 核心色板（原始值，仅供语义 Token 引用） ══════════════ */
+
+  /* Paper（暖白） */
+  --paper-50: #fcfcf9;
+  --paper-100: #efefe4;
+  --paper-200: #dedecb;
+
+  /* Gray（暖中性） */
+  --gray-50: #f5f5f2;
+  --gray-100: #eaeae7;
+  --gray-200: #d7d7d6;
+  --gray-300: #c1c1c0;
+  --gray-400: #a8a8a8;
+  --gray-500: #909090;
+  --gray-600: #666666;
+  --gray-700: #5b5b5b;
+  --gray-800: #424242;
+  --gray-900: #2c2c2c;
+  --gray-950: #222222;
+
+  /* Blue（强调） */
+  --blue-300: #a4c6f7;
+  --blue-400: #81adec;
+  --blue-500: #5d8cd7;
+
+  /* Base */
+  --black: #000000;
+  --white: #ffffff;
+
+  /* ══════════════ 语义 Token · 背景 ══════════════ */
+  --color-root: var(--paper-100);
+  --color-background: var(--paper-50);
+  --color-surface: var(--white);
+  --color-cream: var(--paper-100);
+  --color-raised: var(--gray-50);
+
+  /* ══════════════ 语义 Token · 前景 / 文字 ══════════════ */
+  --color-foreground: var(--gray-950);
+  --color-off-black: var(--gray-950);
+  --color-muted: var(--gray-500);
+  --color-dark-gray: var(--gray-600);
+
+  /* ══════════════ 语义 Token · 边框 ══════════════ */
+  --color-border: var(--paper-200);
+  --color-border-dark: var(--gray-900);
+
+  /* ══════════════ 语义 Token · 强调 / 交互 ══════════════ */
+  --color-blue: var(--blue-400);
+  --color-light-blue: var(--blue-300);
+  --color-focus: #81adec;
+  --color-selection: rgba(138, 185, 255, 0.5);
+
+  /* ══════════════ 透明叠层（outline-first 的基础） ══════════════ */
+  --fg-4: color-mix(in srgb, var(--color-foreground) 4%, transparent);
+  --fg-6: color-mix(in srgb, var(--color-foreground) 6%, transparent);
+  --fg-8: color-mix(in srgb, var(--color-foreground) 8%, transparent);
+  --fg-10: color-mix(in srgb, var(--color-foreground) 10%, transparent);
+  --fg-12: color-mix(in srgb, var(--color-foreground) 12%, transparent);
+  --fg-20: color-mix(in srgb, var(--color-foreground) 20%, transparent);
+  --fg-40: color-mix(in srgb, var(--color-foreground) 40%, transparent);
+  --fg-50: color-mix(in srgb, var(--color-foreground) 50%, transparent);
+  --fg-60: color-mix(in srgb, var(--color-foreground) 60%, transparent);
+  --fg-70: color-mix(in srgb, var(--color-foreground) 70%, transparent);
+  --fg-90: color-mix(in srgb, var(--color-foreground) 90%, transparent);
+
+  /* 卡片轮廓（亮色 6%，暗色媒体查询下切到 white/10） */
+  --outline-card: var(--fg-6);
+  --outline-hover: var(--fg-12);
+
+  /* ══════════════ 语义 Token · 状态 ══════════════ */
+  --color-success-soft: #ecfdf5;
+  --color-success: #007a55;
+  --color-success-strong: #006045;
+  --color-danger-soft: #fef0f2;
+  --color-danger: #c70036;
+  --color-danger-strong: #a50036;
+  --color-warning-soft: #fff7ed;
+  --color-warning: #f97316;
+  --color-warning-strong: #c2410c;
+
+  --color-fg-success: #047857;
+  --color-fg-danger: #be123c;
+  --color-fg-warning: #ea580c;
+  --color-fg-disabled: var(--gray-400);
+
+  --color-border-success: #047857;
+  --color-border-danger: #be123c;
+  --color-border-warning: #ea580c;
+
+  /* ══════════════ 圆角标尺（6px 基准，禁止任意值） ══════════════ */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-base: 6px;
+  --radius-badge: 8px;
+  --radius-full: 9999px;
+
+  /* ══════════════ 阴影（克制使用，优先 outline） ══════════════ */
+  --shadow-subtle: 0 1px 0 0 rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 0 0 1px rgba(0, 0, 0, 0.06);
+  --shadow-button: inset 0 1px rgba(255, 255, 255, 0.12), inset 0 -1px rgba(0, 0, 0, 0.12);
+
+  /* ══════════════ 排版 ══════════════ */
+  --font-sans: 'Montserrat', system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei',
+    'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  --text-xs: 14px;
+  --text-xs-lh: 20px;
+  --text-sm: 16px;
+  --text-sm-lh: 24px;
+  --text-base: 18px;
+  --text-base-lh: 28px;
+  --text-lg: 24px;
+  --text-lg-lh: 32px;
+  --text-xl: 30px;
+  --text-xl-lh: 38px;
+  --text-2xl: 40px;
+  --text-2xl-lh: 48px;
+
+  --weight-light: 300;
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* ══════════════ 间距节奏（4px 基准） ══════════════ */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-15: 60px;
+
+  /*
+   * 卡片内边距。
+   * 说明：UI规则给出的 30/40/60px 面向营销落地页；本项目是**桌面高密度工具界面**
+   * （左侧 12 张参数卡片需同屏可达），故参数卡片使用 --card-padding-compact，
+   * 内容型区块（关于页 / 支付弹窗）仍使用 --card-padding。两者均为 4px 倍数。
+   */
+  --card-padding: 30px;
+  --card-padding-compact: 16px;
+
+  /* ══════════════ 动效 ══════════════ */
+  --duration-micro: 100ms;
+  --duration-interactive: 150ms;
+  --duration-content: 240ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-interactive: var(--duration-interactive) ease-out;
+
+  /* ══════════════ 布局 ══════════════ */
+  --header-height: 56px;
+  --panel-width: 380px;
+  --hairline: 1px;
+}
+
+@media (min-resolution: 2dppx) {
+  :root {
+    --hairline: 0.5px;
+  }
+}
+
+/* ══════════════════════════ 暗色模式（自动解析） ══════════════════════════ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* 背景 */
+    --color-root: var(--gray-950);
+    --color-background: var(--gray-950);
+    --color-surface: var(--gray-900);
+    --color-cream: var(--gray-900);
+    --color-raised: var(--gray-950);
+
+    /* 前景 */
+    --color-foreground: var(--paper-100);
+    --color-off-black: #010101;
+    --color-muted: var(--gray-400);
+    --color-dark-gray: var(--gray-600);
+
+    /* 边框 */
+    --color-border: var(--gray-800);
+    --color-border-dark: var(--gray-800);
+
+    /* 轮廓：暗色下切到 white 10% / 15% */
+    --outline-card: rgba(255, 255, 255, 0.1);
+    --outline-hover: rgba(255, 255, 255, 0.18);
+
+    /* 状态 */
+    --color-success-soft: #002c22;
+    --color-success: #009966;
+    --color-success-strong: #007a55;
+    --color-danger-soft: #4d0218;
+    --color-warning-soft: #7c2d12;
+
+    --color-fg-success: #10b981;
+    --color-fg-danger: #f43f5e;
+    --color-fg-warning: #fbbf24;
+    --color-fg-disabled: var(--gray-600);
+
+    --color-border-success: #065f46;
+    --color-border-warning: #f97316;
+
+    --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+}

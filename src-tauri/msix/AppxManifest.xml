@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  印章生成器 —— MSIX 包清单模板（ADR-001 / 架构设计 §2）
+
+  ★ 本文件是「微软身份主战场」。四类名字严格分离，互不污染（ADR-004 / 问题 001、015、017）：
+
+    | 维度                  | 取值                          | 位置                                   |
+    |-----------------------|-------------------------------|----------------------------------------|
+    | 包身份（机器读）      | sangkl.30724BA61D061          | <Identity Name>                        |
+    | 包内可执行文件（机器读）| seal-designer.exe（ASCII）    | <Application Executable>               |
+    | 用户可见产品名（人读）| 印章生成器                    | <DisplayName> / VisualElements@DisplayName |
+    | Release 资产名（机器读）| seal-designer_x.x.x.x_x64.msix| CI 输出文件名                          |
+
+  ★ Version 由 CI 注入（.github/scripts/pack-msix.ps1）：
+    Tauri 的 semver 只支持三段（1.0.0），微软要求四段（1.0.0.0），
+    脚本读取 package.json 的 version 并补 `.0` 后写回本文件的副本，
+    **不会**修改仓库里的这份模板。占位值保持 1.0.0.0 以便本地干跑校验。
+
+  ★ 图标声明「宁少勿多」（问题 013 / 020）：
+    只声明磁盘上确实存在、且 CI 会复制进 Assets\ 的三张图。
+    绝不声明 <uap:DefaultTile>——一旦写 Square310x310Logo，schema 会强制要求
+    Wide310x150Logo（310×150 长方形），而 `tauri icon` 不生成该尺寸，必然打包失败。
+
+  ★ 语言声明必填（问题 020）：
+    Package/@DefaultLanguage 与 <Resources><Resource Language> 缺一不可，
+    否则合作伙伴中心「包接受验证」直接判失败。
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap rescap"
+  DefaultLanguage="zh-CN">
+
+  <!-- 包身份：三项均来自微软合作伙伴中心，永不改动 -->
+  <Identity
+    Name="sangkl.30724BA61D061"
+    Publisher="CN=3F86E209-E919-4DFD-BBFE-3B881A180019"
+    Version="1.0.0.0"
+    ProcessorArchitecture="x64" />
+
+  <Properties>
+    <!-- 用户在商店与「应用」列表里看到的名字 -->
+    <DisplayName>印章生成器</DisplayName>
+    <!-- 必须与合作伙伴中心账户的发布者显示名完全一致，空值会被包接受验证拒收 -->
+    <PublisherDisplayName>sangkl</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>完全本地离线的印章设计与导出工具，支持公章、方章与自由排版，含做旧效果与高清导出。</Description>
+  </Properties>
+
+  <!-- 至少声明一种支持语言，否则包接受验证报「必须至少声明一种支持的语言」 -->
+  <Resources>
+    <Resource Language="zh-CN" />
+  </Resources>
+
+  <Dependencies>
+    <!-- Windows 10 1809 起支持 MSIX 全信任桌面应用 -->
+    <TargetDeviceFamily
+      Name="Windows.Desktop"
+      MinVersion="10.0.17763.0"
+      MaxVersionTested="10.0.22621.0" />
+  </Dependencies>
+
+  <Capabilities>
+    <!-- 桌面桥全信任应用固定声明，无需任何额外网络/文件系统能力 -->
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+
+  <Applications>
+    <!--
+      Executable 必须是 ASCII（问题 017）：
+      makeappx 对非 ASCII 包内路径存在损坏风险（历史构建日志中被记录为 "????????.exe"），
+      一旦包内真实路径损坏，用户安装后点击磁贴直接启动失败，且只在商店审核阶段才暴露。
+      Cargo 包名为 seal-designer，`mainBinaryName` 亦为 seal-designer，产物名固定。
+      用户可见的中文名由下方 uap:VisualElements/@DisplayName 承载，与 exe 文件名无关。
+    -->
+    <Application
+      Id="SealDesigner"
+      Executable="seal-designer.exe"
+      EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="印章生成器"
+        Description="完全本地离线的印章设计与导出工具，支持公章、方章与自由排版，含做旧效果与高清导出。"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png" />
+    </Application>
+  </Applications>
+
+</Package>

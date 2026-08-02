@@ -1,0 +1,19 @@
+{
+  "//": "构建期脚本（vite.config.ts）的独立类型检查上下文：运行在 Node 而非浏览器，故单列一份。不作为 tsconfig.json 的 project reference —— composite 项目不允许 noEmit（TS6310），而这里只做检查不产出任何文件，因此改由 npm run typecheck 显式跑 `tsc -p tsconfig.node.json`。",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts"]
+}

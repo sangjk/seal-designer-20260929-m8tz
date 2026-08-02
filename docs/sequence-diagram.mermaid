@@ -1,0 +1,113 @@
+%% 印章生成器（Seal Designer）程序调用流程时序图
+%% 对应 架构设计.md §4：3.1 应用初始化 / 3.2 实时预览 / 3.3 导出全链路
+
+%% ── 4.1 应用初始化 ───────────────────────────────────────
+sequenceDiagram
+    autonumber
+    participant U as 用户
+    participant App as App.vue
+    participant UR as useUnlock
+    participant UB as UnlockBadge
+    participant T as TauriBridge
+    participant UC as UnlockCommands
+    participant US as UnlockFileStore
+
+    U->>App: 打开应用
+    App->>UR: ensureLoaded()
+    UR->>T: invoke("get_unlock_state")
+    T->>UC: get_unlock_state(app)
+    UC->>US: read(app)
+    US-->>UC: UnlockState{export_unlocked}
+    UC-->>T: UnlockState
+    T-->>UR: {exportUnlocked}
+    UR->>UR: unlockStore.applyState()
+    UR->>T: listen("unlock:changed")
+    UR-->>UB: 徽标渲染（未开通/已开通）
+    Note over UB: 文案取 copy.ts，绝无禁用词
+
+%% ── 4.2 设计器实时预览 ───────────────────────────────────
+sequenceDiagram
+    autonumber
+    participant P as ParamPanel 卡片
+    participant S as DesignStore
+    participant PV as useSealPreview
+    participant B as buildSvg(core)
+    participant A as aging(core)
+    participant N as useNoiseTexture
+    participant DOM as PreviewStage(SVG+Canvas)
+
+    P->>S: v-model="s.design.xxx"（storeToRefs 驱动）
+    S->>PV: watch(design) 防抖 120ms
+    PV->>B: buildSvg(s.design)
+    B-->>PV: svg 字符串
+    PV->>DOM: 注入 SVG（安全：内部拼接，无用户 HTML）
+    PV->>N: load()（首次懒加载 sealNoisy.png）
+    N-->>PV: texture(HTMLCanvasElement)
+    PV->>A: applyAging(canvas, design, tex, 1)
+    A-->>DOM: 做旧合成（destination-in + 区域蒙版）
+    Note over B,A: 预览与导出调同一 buildSvg + applyAging → 满足 F-41/AC-20
+
+%% ── 4.3 导出全链路（未开通拦截 → 支付 → 解锁 → 落盘） ────
+sequenceDiagram
+    autonumber
+    participant EB as ExportBar
+    participant XE as useExport
+    participant XU as useUnlock
+    participant PD as PaymentDialog
+    participant YP as usePayment
+    participant T as TauriBridge
+    participant PC as PaymentCommands
+    participant W as OrderWatcher
+    participant V as VmqClient
+    participant US as UnlockFileStore
+    participant EX as ExportCommands
+    participant D as RasterExporter(core)
+
+    EB->>XE: requestExport("png")
+    XE->>XU: exportUnlocked?
+    alt 已开通（完整版）
+        XE->>D: renderPng(svg, design, tex, 3)
+        D-->>XE: Uint8Array
+        XE->>T: invoke("export_png",{path,data})
+        T->>EX: export_png(app,path,data)
+        EX->>US: read(app).export_unlocked == true
+        EX->>EX: 写入文件（fs 仅此处可用）
+        EX-->>T: Ok(保存路径)
+        T-->>EB: 成功 toast
+    else 未开通 → 进入支付
+        XE->>PD: open()（emit 默认微信）
+        PD->>YP: open("wechat")
+        YP->>T: invoke("create_wechat_order")
+        T->>PC: create_wechat_order(app)
+        PC->>V: create_order(pay_id,1,"9.9")
+        V->>V: sign_create(pay_id,"",1,"9.9",secret)
+        V-->>PC: OrderInfo{pay_id,order_id,really_price}
+        PC-->>T: OrderInfo
+        T-->>PD: 展示 payUrl + really_price
+        PD->>YP: start_order_watch(order_id,pay_id)
+        YP->>T: invoke("start_order_watch",{order_id,pay_id})
+        T->>W: start(app,order_id)
+        loop 每 3s
+            W->>V: check_order(order_id)
+            V-->>W: state(0/-1/1)
+            W->>T: emit("payment:state-changed")
+        end
+        alt state===1（已支付）
+            W->>US: write_unlocked(app, order_id)
+            US-->>W: Ok（HMAC-SHA256 落 .unlocked.json）
+            W->>T: emit("unlock:changed",{exportUnlocked:true})
+            W->>T: emit("payment:succeeded",{orderId})
+            T-->>XU: unlockStore.applyState(true)
+            T-->>PD: 弹窗关闭 + 提示
+            PD->>XE: 重试 requestExport("png")
+            XE->>D: renderPng(... 3×)
+            XE->>T: invoke("export_png",{path,data})
+            T->>EX: export_png(...)
+            EX->>US: read==true → 写入
+            EX-->>EB: 成功（完整版已开通）
+        else 累计 300s 未付 / state===-1
+            W->>V: close_order(order_id)
+            W->>T: emit("payment:timeout"|"payment:failed")
+            T-->>PD: 展示「超时/失败，可重试」
+        end
+    end

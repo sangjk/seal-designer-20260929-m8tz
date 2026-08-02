@@ -1,0 +1,95 @@
+import type { SealDesign } from './types';
+import { DEFAULT_INK } from './palette';
+import { DEFAULT_FONT_STACK } from './fonts';
+
+/**
+ * 创建一份默认设计态。
+ *
+ * 默认值与网页版基线 `S` 对象逐字段对齐，保证首屏预览结果一致。
+ * 每次调用返回**全新对象**（数组亦为新引用），避免 store 之间共享引用。
+ *
+ * @returns 全新的默认 `SealDesign`。
+ */
+export function createDefaultDesign(): SealDesign {
+  return {
+    // 形状与类型
+    shape: 'circle',
+    sealType: 'yangwen',
+    layoutStyle: 'gongzhang',
+    arrangement: 'horizontal',
+
+    // 边框
+    borderStyle: 'single',
+    borderGap: 8,
+    borderWidth: 5,
+
+    // 尺寸与字号
+    sealSize: 420,
+    fontSize: 56,
+    bottomFontSize: 32,
+    centerFontSize: 52,
+    starSize: 140,
+
+    // 弧形排布
+    topCharGap: 0,
+    bottomCharGap: 0,
+    topArcDeg: 260,
+    bottomArcDeg: 160,
+    topMargin: 28,
+    bottomMargin: 28,
+
+    // 中心区
+    centerLineGap: 10,
+    centerOffset: 14,
+    centerBottomGap: 10,
+
+    // 外观
+    sealColor: DEFAULT_INK,
+    fontFamily: DEFAULT_FONT_STACK,
+    bold: true,
+
+    // 中心元素
+    centerStyle: 'star',
+    centerSymbol: '★',
+
+    // 公章文本
+    arcTopText: '人言信息科技有限公司',
+    arcBottomText: 'NO.2024001',
+    centerText1: '',
+    centerText2: '',
+    serialNumber: '',
+    gongzhangSubText: '',
+
+    // 方章文本
+    fangTexts: ['人言信息', '科技', '有限'],
+    fangzhangSubText: '',
+    fangLineGap: 8,
+
+    // 自由排版文本
+    freeTexts: ['人言信息', '科技'],
+    freeSubText: '',
+    freeSpacing: 8,
+
+    // 做旧
+    realistic: false,
+    wearLevel: 1,
+    wearX: 0,
+    wearY: 0,
+    wearSize: 80,
+    wearFeather: 20,
+  };
+}
+
+/**
+ * 深拷贝一份设计态（仅含基本类型与字符串数组，无需结构化克隆）。
+ *
+ * @param d 源设计态。
+ * @returns 全新的副本。
+ */
+export function cloneDesign(d: SealDesign): SealDesign {
+  return {
+    ...d,
+    fangTexts: [...d.fangTexts],
+    freeTexts: [...d.freeTexts],
+  };
+}

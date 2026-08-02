@@ -1,0 +1,86 @@
+/*
+ * 纸纹 / 网格叠层工具类（UI规则 layout.md「Paper Texture」「Ruler Pattern」）。
+ *
+ * 说明：UI规则原文面向 JSX 内联样式；本项目为 Vue SFC，架构设计 §2 明确要求
+ * 落在 `src/styles/paper-texture.css` 作为工具类，故在此收敛为两个可复用类，
+ * 避免 12 张卡片重复内联同一段 background-image。
+ *
+ * 纹理来源：内联 SVG feTurbulence（data URI），**同源**且零外部请求（G3 离线）。
+ */
+
+/* ── 纸纹颗粒：任何 section / 面板容器加 .paper-grain 即可 ── */
+.paper-grain {
+  position: relative;
+}
+
+.paper-grain > .paper-grain-layer,
+.paper-grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(%23n)' opacity='0.5'/></svg>");
+  background-size: 180px 180px;
+  background-repeat: repeat;
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+/* 纸纹之上的内容需抬层，避免被叠层遮住交互 */
+.paper-grain > *:not(.paper-grain-layer) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .paper-grain > .paper-grain-layer,
+  .paper-grain::before {
+    mix-blend-mode: overlay;
+    opacity: 0.04;
+  }
+}
+
+/* ── 标尺纹（横向细线 + 左侧红色页边线），用于预览舞台等"图纸"区域 ── */
+.paper-ruler {
+  position: relative;
+}
+
+.paper-ruler > .paper-ruler-layer,
+.paper-ruler::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to bottom, var(--color-foreground) 0px, transparent 1px),
+    linear-gradient(
+      to right,
+      rgba(190, 60, 60, 0.18) 0px,
+      rgba(190, 60, 60, 0.18) 1px,
+      transparent 1px
+    );
+  background-size: 100% 24px, 60px 100%;
+  background-position: 0 0, 0 0;
+  opacity: 0.07;
+}
+
+@media (prefers-color-scheme: dark) {
+  .paper-ruler > .paper-ruler-layer,
+  .paper-ruler::after {
+    opacity: 0.05;
+  }
+}
+
+/* ── 透明底棋盘格（F-40：预览区表达"透明背景"） ── */
+.paper-checkerboard {
+  background-color: var(--color-background);
+  background-image:
+    linear-gradient(45deg, var(--fg-6) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--fg-6) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--fg-6) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--fg-6) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}

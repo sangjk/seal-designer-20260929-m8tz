@@ -1,0 +1,255 @@
+classDiagram
+    direction LR
+
+    class SealDesign {
+        +shape: Shape
+        +sealType: SealType
+        +layoutStyle: LayoutStyle
+        +arrangement: Arrangement
+        +borderStyle: BorderStyle
+        +borderGap: number
+        +borderWidth: number
+        +sealSize: number
+        +fontSize: number
+        +bottomFontSize: number
+        +centerFontSize: number
+        +starSize: number
+        +topCharGap: number
+        +bottomCharGap: number
+        +topArcDeg: number
+        +bottomArcDeg: number
+        +topMargin: number
+        +bottomMargin: number
+        +centerLineGap: number
+        +centerOffset: number
+        +centerBottomGap: number
+        +sealColor: string
+        +fontFamily: string
+        +bold: boolean
+        +centerStyle: CenterStyle
+        +centerSymbol: string
+        +arcTopText: string
+        +arcBottomText: string
+        +centerText1: string
+        +centerText2: string
+        +serialNumber: string
+        +gongzhangSubText: string
+        +fangTexts: string[]
+        +fangzhangSubText: string
+        +fangLineGap: number
+        +freeTexts: string[]
+        +freeSubText: string
+        +freeSpacing: number
+        +realistic: boolean
+        +wearLevel: number
+        +wearX: number
+        +wearY: number
+        +wearSize: number
+        +wearFeather: number
+    }
+
+    class DesignStore {
+        +design: SealDesign
+        +setShape(s) void
+        +setLayoutStyle(l) void
+        +addTextRow(kind) void
+        +removeTextRow(kind, i) void
+        +applyPreset(key) void
+        +setColor(hex) void
+        +reset() void
+    }
+
+    class UnlockStore {
+        +exportUnlocked: boolean
+        +loaded: boolean
+        +refresh() Promise
+        +applyState(s) void
+    }
+
+    class SealSvgBuilder {
+        <<module core/buildSvg>>
+        +buildSvg(d: SealDesign) string
+    }
+    class AgingComposer {
+        <<module core/aging>>
+        +applyAging(canvas, d, tex, scale) void
+        +generateProceduralNoise(size, density) HTMLCanvasElement
+    }
+    class RasterExporter {
+        <<module core/exportRaster>>
+        +renderPng(svg, d, tex, scale) Promise~Uint8Array~
+    }
+    class GeometryUtil {
+        <<module core/geometry>>
+        +starPoints(cx, cy, oR, iR) string
+        +roundedRectPath(x, y, w, h, r) string
+        +computeArcChars(text, cx, cy, r, deg, side, isEllipse, offset, gap) ArcChar[]
+    }
+    class FontRegistry {
+        <<module core/fonts>>
+        +FONT_OPTIONS: FontOption[]
+        +isFontAvailable(stack) boolean
+    }
+    class PresetRegistry {
+        <<module core/presets>>
+        +PRESETS: Record~PresetKey, Partial~SealDesign~~
+    }
+    class CopyText {
+        <<module core/copy>>
+        +UNLOCK_LOCKED: string
+        +UNLOCK_OPEN: string
+        +BTN_UNLOCK: string
+        +DISCLAIMER: string
+    }
+
+    class useSealPreview {
+        <<composable>>
+        +svgEl: Ref
+        +rerender() void
+    }
+    class useNoiseTexture {
+        <<composable>>
+        +texture: Ref~HTMLCanvasElement~
+        +ready: Ref~boolean~
+        +load() Promise
+    }
+    class useExport {
+        <<composable>>
+        +requestExport(fmt) Promise
+    }
+    class usePayment {
+        <<composable>>
+        +session: Ref~PaySession~
+        +open(channel) Promise
+        +switchToAlipay() Promise
+        +cancel() Promise
+    }
+    class useUnlock {
+        <<composable>>
+        +exportUnlocked: Ref~boolean~
+        +ensureLoaded() Promise
+    }
+
+    class TauriBridge {
+        <<Tauri IPC>>
+        +invoke(cmd, args) Promise
+        +listen(event, cb) UnlistenFn
+    }
+
+    class PaymentCommands {
+        <<rust commands/payment.rs>>
+        +create_wechat_order(app) OrderInfo
+        +create_alipay_order(app) OrderInfo
+        +poll_order(order_id) OrderStatus
+        +start_order_watch(app, order_id) void
+        +cancel_order_watch(app) void
+        +close_order(order_id) void
+        +get_pay_config() PayConfig
+    }
+    class UnlockCommands {
+        <<rust commands/unlock.rs>>
+        +get_unlock_state(app) UnlockState
+    }
+    class ExportCommands {
+        <<rust commands/export.rs>>
+        +export_png(app, path, data) String
+        +export_svg(app, path, svg) String
+    }
+    class AppInfoCommands {
+        <<rust commands/app_info.rs>>
+        +get_app_info(app) AppInfo
+    }
+
+    class VmqClient {
+        <<rust payment/vmq_client.rs>>
+        -http: reqwest.Client
+        +create_order(pay_id, ty, price) OrderInfo
+        +check_order(order_id) i8
+        +close_order(order_id) bool
+    }
+    class Signer {
+        <<rust payment/sign.rs>>
+        +sign_create(pay_id, param, ty, price, secret) String
+        +sign_query(order_id, secret) String
+    }
+    class OrderWatcher {
+        <<rust payment/watcher.rs>>
+        -handle: Option~JoinHandle~
+        +start(app, order_id) void
+        +cancel() void
+    }
+    class UnlockFileStore {
+        <<rust unlock/store.rs>>
+        +read(app) UnlockState
+        +write_unlocked(app, order_ref) Result
+        -sign(payload) String
+        -verify(payload, sig) bool
+    }
+
+    class OrderInfo {
+        +order_id: String
+        +pay_id: String
+        +channel: u8
+        +price: String
+        +really_price: String
+    }
+    class OrderStatus {
+        +state: i8
+        +state_text: String
+    }
+    class UnlockState {
+        +export_unlocked: bool
+    }
+    class PayConfig {
+        +price: String
+        +poll_interval_secs: u64
+        +timeout_secs: u64
+    }
+    class AppInfo {
+        +product_name: String
+        +version: String
+    }
+
+    class ExportBar
+    class PaymentDialog
+    class UnlockBadge
+    class ParamPanel
+    class PreviewStage
+
+    DesignStore --> SealDesign : holds
+    DesignStore ..> PresetRegistry : uses
+    useSealPreview ..> SealSvgBuilder : uses
+    useSealPreview ..> AgingComposer : uses
+    useSealPreview ..> useNoiseTexture : uses
+    useExport ..> RasterExporter : uses
+    useExport ..> SealSvgBuilder : uses
+    useExport ..> useUnlock : gate check
+    useExport ..> usePayment : opens on locked
+    RasterExporter ..> AgingComposer : reuses
+    SealSvgBuilder ..> GeometryUtil : uses
+    SealSvgBuilder ..> FontRegistry : uses
+    useUnlock --> UnlockStore : syncs
+    useExport ..> TauriBridge : invoke
+    usePayment ..> TauriBridge : invoke + listen
+    useUnlock ..> TauriBridge : invoke + listen
+    TauriBridge ..> PaymentCommands
+    TauriBridge ..> UnlockCommands
+    TauriBridge ..> ExportCommands
+    TauriBridge ..> AppInfoCommands
+    PaymentCommands --> VmqClient
+    PaymentCommands --> OrderWatcher
+    VmqClient --> Signer
+    VmqClient ..> OrderInfo : returns
+    VmqClient ..> OrderStatus : returns
+    OrderWatcher --> VmqClient : polls 3s
+    OrderWatcher --> UnlockFileStore : write on paid
+    UnlockCommands --> UnlockFileStore
+    UnlockFileStore ..> UnlockState : returns
+    ExportCommands --> UnlockFileStore : gate
+    PaymentCommands ..> PayConfig : returns
+    AppInfoCommands ..> AppInfo : returns
+    ExportBar ..> useExport
+    PaymentDialog ..> usePayment
+    UnlockBadge ..> useUnlock
+    ParamPanel --> DesignStore
+    PreviewStage ..> useSealPreview

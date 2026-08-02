@@ -1,0 +1,142 @@
+# 印章生成器 —— Windows 构建与发布流水线
+#
+# 产物两件（约束 1）：
+#   1. seal-designer_<x.y.z>_x64-setup.exe   ← Tauri NSIS
+#   2. seal-designer_<x.y.z.0>_x64.msix      ← makeappx 手工封装（ADR-001 / 问题 012）
+#
+# 关键决策（逐条对应已知坑）：
+#   · 问题 012：Tauri 2 无 msix bundle target → `--bundles nsis` + `pack-msix.ps1`
+#   · 问题 007：不做本地证书签名，未签名 MSIX 上传合作伙伴中心由商店自动签名
+#   · 问题 008：跳过 actions/upload-artifact，构建产物直接进 Release
+#   · 问题 010：Swatinem/rust-cache 缓存**依赖** crate（省 ~15 分钟）
+#   · 问题 011：Release 资产名全 ASCII，中文只出现在「安装后用户看到的地方」
+#   · 问题 019：缓存与「旧资源」的平衡 —— 见下方「清理陈旧产物」步骤的说明
+
+name: Build & Release Windows
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+# ★ 缺失则 100% 无法创建 Release
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Git（中文路径与长路径）
+        shell: pwsh
+        run: |
+          git config --global core.quotepath false
+          git config --global core.longpaths true
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+
+      # 只缓存**依赖 crate**，不缓存工作区自身 crate（rust-cache 的既定行为）。
+      # 因此「缓存导致旧资源」的风险只可能来自本项目自己的产物，由下一步显式清理。
+      - name: 缓存 Rust 依赖
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: 'src-tauri -> target'
+          cache-on-failure: 'true'
+
+      # ★ 问题 019（构建缓存导致旧资源）的精确解法：
+      #   不做 `cargo clean` 全量清空（那会把上一步刚恢复的依赖缓存一起毁掉，
+      #   每次构建重新编译数百个 crate，与问题 010 的优化直接冲突）。
+      #   真正会「变陈旧」的只有三处：前端 dist、本项目 crate 的编译产物、上轮 staging。
+      #   逐一定点清除，既保证产物新鲜，又保住依赖缓存。
+      - name: 清理陈旧产物（保留依赖缓存）
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          foreach ($p in @('dist', 'msix-staging', 'src-tauri\target\release\bundle')) {
+            if (Test-Path $p) { Remove-Item $p -Recurse -Force; Write-Host "已清理: $p" }
+          }
+          # 只清本项目 crate，依赖 crate 的编译产物保持不动
+          cargo clean --manifest-path src-tauri\Cargo.toml --release -p seal-designer
+          Write-Host "已清理本项目 crate 的 release 产物（依赖缓存保留）"
+
+      - name: 安装前端依赖
+        run: npm ci
+
+      - name: 类型检查
+        run: npm run typecheck
+
+      # `tauri build` 除产出 bundle/nsis/*.exe 外，还会在 target/release/ 留下
+      # 未打包运行时（主 exe + 依赖 DLL），这正是 MSIX 需要的 payload。
+      - name: 构建 Tauri 应用（NSIS 安装包 + 未打包运行时）
+        run: npx tauri build --bundles nsis
+
+      # ★ 问题 011：GitHub Release Assets API 会吞掉资产名里的非 ASCII 段。
+      #   productName 是中文，NSIS 产物名因此带中文，上传前必须改成 ASCII。
+      - name: NSIS 产物重命名为 ASCII
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $version = (Get-Content package.json -Raw -Encoding UTF8 | ConvertFrom-Json).version
+          $nsisDir = "src-tauri\target\release\bundle\nsis"
+          $nsis = Get-ChildItem "$nsisDir\*-setup.exe" -File | Select-Object -First 1
+          if (-not $nsis) { throw "未找到 NSIS 安装包 ($nsisDir\*-setup.exe)" }
+          $target = "seal-designer_${version}_x64-setup.exe"
+          if ($nsis.Name -ne $target) {
+            Rename-Item $nsis.FullName $target -Force
+          }
+          Write-Host "NSIS 安装包: $($nsis.Name) -> $target"
+
+      # 白名单 staging + 清单预检 + 污染自检 + makeappx pack，全部在脚本里
+      - name: 打包 MSIX（makeappx）
+        shell: pwsh
+        run: .\.github\scripts\pack-msix.ps1
+
+      - name: 产物清单
+        shell: pwsh
+        run: |
+          Get-ChildItem "src-tauri\target\release\bundle\nsis\*.exe",
+                        "src-tauri\target\release\bundle\msix\*.msix" -File |
+            Select-Object Name, @{N='MB';E={[math]::Round($_.Length / 1MB, 2)}} |
+            Format-Table -AutoSize
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: success() && startsWith(github.ref, 'refs/tags/')
+        with:
+          name: '${{ github.ref_name }}'
+          tag_name: '${{ github.ref_name }}'
+          body: |
+            ## 印章生成器 ${{ github.ref_name }}
+
+            ### 包含文件
+            - `seal-designer_*_x64-setup.exe` — Windows 安装包（NSIS，简体中文安装向导）
+            - `seal-designer_*_x64.msix` — 微软应用商店包（未签名，上传后由商店自动签名）
+
+            ### 应用商店身份
+            > 以下 7 项与「项目需要信息.md」逐字一致，上传合作伙伴中心时用于核对包身份。
+            - Store ID: `9P693685R5MR`
+            - Package Family Name: `sangkl.30724BA61D061_fbnffa3ktn7mr`
+            - Package/Identity/Name: `sangkl.30724BA61D061`
+            - Package/Identity/Publisher: `CN=3F86E209-E919-4DFD-BBFE-3B881A180019`
+            - Package/Properties/PublisherDisplayName: `sangkl`
+            - MSA 应用 ID: `95d21e43-7bfa-4ec1-8747-d1d7726e1f58`
+            - Package SID: `S-1-15-2-436552469-1792244464-938760001-4261866467-1822193793-3105459662-3053413958`
+          files: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msix/*.msix
+          fail_on_unmatched_files: true
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
