@@ -40,7 +40,14 @@ function handleDialogClose(): void {
 .app-shell {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  /*
+   * ★ 关键：必须是「确定高度」而非 `min-height`。
+   * 若用 `min-height: 100vh`，内容（参数面板 12 张卡片）会撑高整条 flex 链
+   * （app-shell→app-main→designer→panel 一路变到内容总高），使 `min-height:0`
+   * 失去约束基准 —— 面板不可滚动、预览因被居中到超高画布之外而不可见。
+   * 改为确定高度后，flex 子项在 100vh 内分配，`min-height:0` 生效、内部滚动恢复。
+   */
+  height: 100vh;
   background: var(--color-root);
 }
 
