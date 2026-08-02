@@ -62,5 +62,8 @@ const s = useDesignStore();
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-3);
+  /* 额外底部留白：即使窗口恰好贴到工作区底边，最底部「做旧效果」卡片
+     也始终位于窗口可视底边之上，便于操作。 */
+  padding-bottom: calc(var(--space-3) + 24px);
 }
 </style>

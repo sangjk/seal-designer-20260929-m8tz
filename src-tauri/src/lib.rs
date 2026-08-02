@@ -12,8 +12,10 @@ pub mod config;
 pub mod error;
 pub mod payment;
 pub mod unlock;
+pub mod window_fit;
 
 use payment::watcher::WatcherState;
+use tauri::Manager;
 
 /// 构建并运行 Tauri 应用。
 ///
@@ -56,6 +58,14 @@ pub fn run() {
     ]);
 
     builder
+        .setup(|app| {
+            // 启动即把主窗口约束进工作区，避免底部被 Windows 任务栏遮挡
+            // （最底部「做旧效果」等控件之前因此无法操作）。
+            if let Some(window) = app.get_webview_window("main") {
+                window_fit::fit_window_to_work_area(&window);
+            }
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("failed to launch seal-designer");
 }
