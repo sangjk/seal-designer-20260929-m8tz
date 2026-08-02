@@ -127,7 +127,22 @@ if (Test-Path $resourceDir) {
 # ── 3. AppxManifest：复制模板并注入四段版本号 ─────────────────────────────────
 
 $manifestDst = Join-Path $StagingDir 'AppxManifest.xml'
-[xml]$manifest = Get-Content $manifestSrc -Raw -Encoding UTF8
+
+# 读取模板。防御性去掉 XML 注释：注释内若含两个相邻连字符（如装饰性表格分隔线），
+# .NET 的 XML 解析器会直接判整份文件为非法 XML，导致本脚本在 [xml] 转换时失败。
+# 去掉注释不影响清单语义，makeappx 与商店校验均忽略注释。
+$manifestText = Get-Content $manifestSrc -Raw -Encoding UTF8
+$manifestText = [regex]::Replace(
+    $manifestText,
+    '<!--.*?-->',
+    '',
+    [System.Text.RegularExpressions.RegexOptions]::Singleline
+)
+try {
+    [xml]$manifest = $manifestText
+} catch {
+    throw "AppxManifest.xml 解析失败（请确认注释中不含两个相邻连字符）: $($_.Exception.Message)"
+}
 
 $ns = New-Object System.Xml.XmlNamespaceManager($manifest.NameTable)
 $ns.AddNamespace('d',    'http://schemas.microsoft.com/appx/manifest/foundation/windows10')
