@@ -169,6 +169,28 @@
   --header-height: 56px;
   --panel-width: 380px;
   --hairline: 1px;
+
+  /* ════════════════════════════════════════════════════════════════
+   * 现代 Windows / Fluent 风格面板皮肤（左侧参数面板专用，见 ParamPanel.vue）
+   * 仅作用于 .panel 内部，右侧预览 / 弹窗不受影响。
+   * 复用整体主题 Token（--color-blue / --radius-* / --shadow-*）以保证视觉统一。
+   * ════════════════════════════════════════════════════════════════ */
+  --win-face: #ebebeb; /* 面板中性灰底 */
+  --win-surface: #ffffff; /* 卡片 / 输入白底 */
+  --win-surface-2: #f4f4f4; /* 悬停 / 选中浅底 */
+  --win-border: #d6d6d6; /* 1px 描边 */
+  --win-border-strong: #c2c2c2;
+  --win-text: #1f1f1f;
+  --win-text-dim: #5c5c5c;
+  --win-accent: var(--color-blue); /* 复用整体主题强调蓝 #81adec */
+  --win-accent-strong: var(--blue-500); /* 略深，用于填充主按钮 / 选中态 */
+  --win-accent-soft: var(--color-selection); /* rgba(138,185,255,.5) 浅蓝填充 */
+  --win-accent-ring: var(--color-focus); /* #81adec 聚焦环 */
+  --win-radius: var(--radius-base); /* 6px */
+  --win-radius-sm: var(--radius-sm); /* 4px */
+  --win-shadow: var(--shadow-card);
+  --win-shadow-hover: var(--shadow-sm);
+  --win-font: var(--font-sans);
 }
 
 @media (min-resolution: 2dppx) {
@@ -217,5 +239,23 @@
     --color-border-warning: #f97316;
 
     --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.1);
+
+    /* 现代 Windows / Fluent 皮肤 · 暗色（复用整体主题 token） */
+    --win-face: #2b2b2b;
+    --win-surface: #1f1f1f;
+    --win-surface-2: #2f2f2f;
+    --win-border: #3a3a3a;
+    --win-border-strong: #4a4a4a;
+    --win-text: #e8e8e8;
+    --win-text-dim: #b0b0b0;
+    --win-accent: var(--color-blue);
+    --win-accent-strong: var(--blue-500);
+    --win-accent-soft: rgba(129, 173, 236, 0.22);
+    --win-accent-ring: var(--color-focus);
+    --win-radius: var(--radius-base);
+    --win-radius-sm: var(--radius-sm);
+    --win-shadow: var(--shadow-card);
+    --win-shadow-hover: var(--shadow-sm);
+    --win-font: var(--font-sans);
   }
 }

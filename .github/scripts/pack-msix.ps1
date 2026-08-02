@@ -210,16 +210,19 @@ if (-not $pdnNode -or [string]::IsNullOrWhiteSpace($pdnNode.InnerText)) {
     throw 'AppxManifest 的 PublisherDisplayName 为空，包接受验证会拒收'
 }
 
-# 5.5 至少一种支持语言 + 默认语言非空（问题 020 错误 3、4）
+# 5.5 至少一种支持语言（问题 020 错误 3）
+# 注意：MSIX 默认语言由 <Resources><Resource Language> 决定，
+# Package/@DefaultLanguage 并非 foundation/windows10 schema 合法属性（makeappx 报 C00CE015），
+# 因此不再要求该属性，仅校验至少声明一种语言。
 $resourceNodes = @($manifest.SelectNodes('/d:Package/d:Resources/d:Resource', $ns))
 if ($resourceNodes.Count -eq 0) {
     throw 'AppxManifest 未声明任何 <Resource Language>，包接受验证会拒收'
 }
-$defaultLanguage = $manifest.DocumentElement.GetAttribute('DefaultLanguage')
+$defaultLanguage = ($resourceNodes | Select-Object -First 1).GetAttribute('Language')
 if ([string]::IsNullOrWhiteSpace($defaultLanguage)) {
-    throw 'AppxManifest 的 Package/@DefaultLanguage 为空，包接受验证会拒收'
+    throw 'AppxManifest 的 <Resource Language> 为空，包接受验证会拒收'
 }
-Write-Host "语言声明校验通过（DefaultLanguage=$defaultLanguage，Resource 共 $($resourceNodes.Count) 项）"
+Write-Host "语言声明校验通过（默认语言=$defaultLanguage，Resource 共 $($resourceNodes.Count) 项）"
 
 # 5.6 不得声明 DefaultTile（问题 013：一旦有 Square310x310Logo 就强制要求 Wide310x150Logo）
 if ($visualNode.SelectSingleNode('uap:DefaultTile', $ns)) {

@@ -22,15 +22,15 @@
     Wide310x150Logo（310×150 长方形），而 `tauri icon` 不生成该尺寸，必然打包失败。
 
   ★ 语言声明必填（问题 020）：
-    Package/@DefaultLanguage 与 <Resources><Resource Language> 缺一不可，
-    否则合作伙伴中心「包接受验证」直接判失败。
+    默认语言由 <Resources><Resource Language="zh-CN"/> 决定，
+    Package/@DefaultLanguage 并非 foundation/windows10 schema 合法属性（makeappx 会报 C00CE015），
+    因此本清单只声明 <Resources>，不写 Package/@DefaultLanguage。
 -->
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  IgnorableNamespaces="uap rescap"
-  DefaultLanguage="zh-CN">
+  IgnorableNamespaces="uap rescap">
 
   <!-- 包身份：三项均来自微软合作伙伴中心，永不改动 -->
   <Identity
