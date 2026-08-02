@@ -2,7 +2,7 @@
 import ParamPanel from '@/components/panel/ParamPanel.vue';
 import ExportBar from '@/components/preview/ExportBar.vue';
 import PreviewStage from '@/components/preview/PreviewStage.vue';
-import { DISCLAIMER } from '@/core/copy';
+import { DISCLAIMER_DESIGN } from '@/core/copy';
 
 /**
  * 设计器主界面：左 `ParamPanel`（参数卡片） + 右 `PreviewStage` / `ExportBar`。
@@ -18,7 +18,7 @@ import { DISCLAIMER } from '@/core/copy';
     <section class="designer__main">
       <PreviewStage />
       <ExportBar />
-      <p class="designer__disclaimer">{{ DISCLAIMER }}</p>
+      <p class="designer__disclaimer">{{ DISCLAIMER_DESIGN }}</p>
     </section>
   </div>
 </template>

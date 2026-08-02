@@ -13,6 +13,7 @@ import {
   APP_NAME,
   BTN_BACK,
   DISCLAIMER,
+  DISCLAIMER_DESIGN,
 } from '@/core/copy';
 
 /**
@@ -73,6 +74,7 @@ onMounted(async () => {
       <section class="about__disclaimer">
         <h3 class="about__disclaimer-title">{{ ABOUT_DISCLAIMER_TITLE }}</h3>
         <p class="about__disclaimer-text">{{ DISCLAIMER }}</p>
+        <p class="about__disclaimer-text">{{ DISCLAIMER_DESIGN }}</p>
       </section>
 
       <div class="about__actions">

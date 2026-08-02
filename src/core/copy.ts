@@ -21,6 +21,10 @@ export const BTN_UNLOCK = '开通导出功能';
 /** 免责声明（F-47 / Q8）。 */
 export const DISCLAIMER = '仅供设计参考与娱乐，请遵守相关法律法规';
 
+/** 设计免责声明：基于本项目进行印章设计的权责声明（用户要求，置于关于页与导出按钮下方）。 */
+export const DISCLAIMER_DESIGN =
+  '本软件仅为印章排版设计辅助工具，所生成的图案不代表任何真实、有效的印鉴。用户依据本软件进行印章的设计、制作与使用，须自行遵守《中华人民共和国印章治安管理办法》等相关法律法规，并承担由此产生的一切法律责任与后果。';
+
 /** 导出区域。 */
 export const EXPORT_TITLE = '导出';
 export const BTN_EXPORT_PNG = '导出 PNG';
