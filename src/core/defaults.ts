@@ -1,5 +1,4 @@
 import type { SealDesign } from './types';
-import { DEFAULT_INK } from './palette';
 import { DEFAULT_FONT_STACK } from './fonts';
 
 /**
@@ -21,7 +20,7 @@ export function createDefaultDesign(): SealDesign {
     // 边框
     borderStyle: 'single',
     borderGap: 8,
-    borderWidth: 5,
+    borderWidth: 12,
 
     // 尺寸与字号
     sealSize: 420,
@@ -31,11 +30,11 @@ export function createDefaultDesign(): SealDesign {
     starSize: 140,
 
     // 弧形排布
-    topCharGap: 0,
-    bottomCharGap: 0,
+    topCharGap: -8,
+    bottomCharGap: -5,
     topArcDeg: 260,
     bottomArcDeg: 160,
-    topMargin: 28,
+    topMargin: 39,
     bottomMargin: 28,
 
     // 中心区
@@ -44,18 +43,18 @@ export function createDefaultDesign(): SealDesign {
     centerBottomGap: 10,
 
     // 外观
-    sealColor: DEFAULT_INK,
+    sealColor: '#FF0000', // 朱红
     fontFamily: DEFAULT_FONT_STACK,
     bold: true,
 
     // 中心元素
-    centerStyle: 'star',
+    centerStyle: 'text',
     centerSymbol: '★',
 
     // 公章文本
-    arcTopText: '人言信息科技有限公司',
-    arcBottomText: 'NO.2024001',
-    centerText1: '',
+    arcTopText: '某某某科技有限公司',
+    arcBottomText: '123456789',
+    centerText1: '合同章',
     centerText2: '',
     serialNumber: '',
     gongzhangSubText: '',
@@ -70,12 +69,12 @@ export function createDefaultDesign(): SealDesign {
     freeSubText: '',
     freeSpacing: 8,
 
-    // 做旧
-    realistic: false,
-    wearLevel: 1,
+    // 做旧（默认开启：磨损强度 1.4、磨损区域 120%）
+    realistic: true,
+    wearLevel: 1.4,
     wearX: 0,
     wearY: 0,
-    wearSize: 80,
+    wearSize: 120,
     wearFeather: 20,
   };
 }
