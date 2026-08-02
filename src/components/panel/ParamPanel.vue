@@ -63,7 +63,10 @@ const s = useDesignStore();
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  /* 底部留白：保证最后一张卡片（做旧效果）即使滚动到底也始终位于窗口底边之上，
+     不被 Windows 任务栏边缘贴边遮挡（与 work-area 窗口适配双保险）。 */
   padding: var(--space-3);
+  padding-bottom: calc(var(--space-3) + 24px);
 }
 
 /* ── 现代细滚动条（10px 圆角滑块） ── */
