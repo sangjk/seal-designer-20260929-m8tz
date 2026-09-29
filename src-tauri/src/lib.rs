@@ -30,6 +30,7 @@ pub fn run() {
     let builder = builder.invoke_handler(tauri::generate_handler![
         commands::unlock::get_unlock_state,
         commands::unlock::dev_set_export_unlocked,
+        commands::unlock::redeem_review_code,
         commands::payment::create_wechat_order,
         commands::payment::create_alipay_order,
         commands::payment::poll_order,
@@ -45,6 +46,7 @@ pub fn run() {
     #[cfg(not(debug_assertions))]
     let builder = builder.invoke_handler(tauri::generate_handler![
         commands::unlock::get_unlock_state,
+        commands::unlock::redeem_review_code,
         commands::payment::create_wechat_order,
         commands::payment::create_alipay_order,
         commands::payment::poll_order,

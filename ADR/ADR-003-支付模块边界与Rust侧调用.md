@@ -15,7 +15,7 @@
 - 签名为 `md5(pay_id + param + type + price + appSecret)`，**`param` 恒为 `&str("")` 绝不传 `null`**（问题 009）。
 - 轮询由 Rust `OrderWatcher` 启动 `tokio` 任务，每 3s 查一次、300s 超时；状态变化经 `emit` 广播 `payment:state-changed` / `payment:succeeded` / `payment:timeout` / `payment:failed`。
 - 支付成功后由 Rust 直接调用 `unlock::store::write_unlocked` 写解锁文件 + 广播 `unlock:changed`（前端不介入写）。
-- `tauri.conf.json` 的 `csp` 中 `connect-src` **仅含 V免签 API host**（`vmianqian2.ifama.top`）；`capabilities/default.json` 仅授予 `core:default` + `dialog:allow-save`。
+- `tauri.conf.json` 的 `csp` 中 `connect-src` **仅含 V免签 API host**（`laosanvmianqianzhuanyong1.ifama.top`）；`capabilities/default.json` 仅授予 `core:default` + `dialog:allow-save`。
 
 ## 理由
 

@@ -46,6 +46,43 @@ pub fn dev_set_export_unlocked(app: AppHandle, v: bool) -> Result<(), crate::err
     Ok(())
 }
 
+/// 兑换商店审核测试码（微软认证策略 10.3.3「App Is Testable」）。
+///
+/// 审核员无法完成真实支付，在支付弹窗内输入测试码即可开通导出功能。
+/// 校验通过后走与支付成功**完全相同**的落盘 + 广播链路
+/// （`store::write_state` + `unlock:changed`），订单参考号固定为 `MSREVIEW`。
+///
+/// 安全纪律：
+/// - 码值是编译期常量（`config::REVIEW_UNLOCK_CODE`），不存盘、不下发；
+/// - 逐字节等长比较，不匹配一律返回 `Ok(false)`，不泄露任何细节；
+/// - 幂等：已开通状态下再次兑换仍返回 `Ok(true)`。
+///
+/// # 参数
+/// - `app`：Tauri 应用句柄。
+/// - `code`：用户输入的测试码（允许首尾空白与连字符大小写差异）。
+///
+/// # 返回
+/// 兑换成功返回 `Ok(true)`，测试码无效返回 `Ok(false)`。
+///
+/// # 错误
+/// 解锁文件写入失败时返回 `AppError`。
+#[tauri::command]
+pub fn redeem_review_code(app: AppHandle, code: String) -> Result<bool, crate::error::AppError> {
+    let normalized = code.trim().to_ascii_uppercase();
+    let expected = config::REVIEW_UNLOCK_CODE;
+    if normalized.len() != expected.len() || normalized.as_bytes() != expected.as_bytes() {
+        return Ok(false);
+    }
+    store::write_state(&app, true, config::REVIEW_ORDER_REF)?;
+    let _ = app.emit(
+        config::EVENT_UNLOCK_CHANGED,
+        UnlockState {
+            export_unlocked: true,
+        },
+    );
+    Ok(true)
+}
+
 /// 广播一次解锁态变更事件。
 ///
 /// 供支付轮询任务在写盘成功后调用，保证「文件先落地、事件后广播」的顺序

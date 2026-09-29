@@ -307,7 +307,7 @@
 
 ## 9. 技术考量与依赖（Technical Considerations，仅标注，不写实现）
 
-- **依赖**：V免签（Rust 侧调用 `https://vmianqian2.ifama.top`，appId/appSecret 由工程师从输入源读取）；`sealNoisy.png` 须作为 Tauri 资源随包分发；本地二维码 `weixin.png`/`zhifubao.png` 由支付模块读取。
+- **依赖**：V免签（Rust 侧调用 `https://laosanvmianqianzhuanyong1.ifama.top`，appId/appSecret 由工程师从输入源读取）；`sealNoisy.png` 须作为 Tauri 资源随包分发；本地二维码 `weixin.png`/`zhifubao.png` 由支付模块读取。
 - **已知风险**：
   | 风险 | 可能性 | 影响 | 缓解 |
   |------|--------|------|------|
