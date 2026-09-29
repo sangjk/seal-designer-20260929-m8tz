@@ -1,67 +1,86 @@
 /*
- * Paper Design 全量设计 Token（架构设计 §1.2 / ADR-008 / 规则/UI规则.md）。
+ * 篆刻印章生成器 · 设计 Token（宣纸暖中性 / 朱红印章红 / Editorial）。
  *
- * ★ 纪律：
- *   1. 组件中**禁止**出现任何裸 hex / rgb 值，一律引用本文件的 Token。
- *      唯一豁免：`src/core/palette.ts` 的 7 色印色（业务数据，非 UI Token）。
- *   2. 暗色模式**自动**解析 —— 组件永远不手工切换颜色，只引用语义 Token。
- *   3. 圆角只允许取自 --radius-* 标尺；阴影优先用 outline 替代。
+ * ★ 本轮设计主张（与上一轮 Fluent 蓝彻底拉开）：
+ *   - 主色系由「科技蓝」切换为「朱红印章红（朱砂）」，呼应篆刻主题；
+ *   - 底色由冷调中性灰切换为「宣纸暖白 / 米色」；
+ *   - 圆角体系重新定义（3 / 5 / 8 / 10 / 14），与上一轮 2/4/6/8 不再相同；
+ *   - 阴影体系重新定义（暖调、低饱和、柔和大扩散）。
+ *
+ * ★ 纪律：组件中只引用语义 Token，禁止裸 hex / rgb（除 src/core/palette.ts 的 7 色印色）。
+ *   --color-blue 保留为向后兼容别名，重映射到新强调色，复用组件自动换肤。
  */
 
 :root {
   color-scheme: light dark;
 
-  /* ══════════════ 核心色板（原始值，仅供语义 Token 引用） ══════════════ */
+  /* ══════════════ 原始色板（仅供语义 Token 引用） ══════════════ */
 
-  /* Paper（暖白） */
-  --paper-50: #fcfcf9;
-  --paper-100: #efefe4;
-  --paper-200: #dedecb;
+  /* 宣纸暖白（Paper） */
+  --paper-50: #fbf7f0;
+  --paper-100: #f1e9da;
+  --paper-200: #e4d7c1;
 
-  /* Gray（暖中性） */
-  --gray-50: #f5f5f2;
-  --gray-100: #eaeae7;
-  --gray-200: #d7d7d6;
-  --gray-300: #c1c1c0;
-  --gray-400: #a8a8a8;
-  --gray-500: #909090;
-  --gray-600: #666666;
-  --gray-700: #5b5b5b;
-  --gray-800: #424242;
-  --gray-900: #2c2c2c;
-  --gray-950: #222222;
+  /* 墨色（Ink，暖中性文字） */
+  --ink-900: #2b2520;
+  --ink-800: #3c342c;
+  --ink-700: #574d42;
+  --ink-600: #6f6354;
+  --ink-500: #8c7e6c;
+  --ink-400: #b3a48f;
 
-  /* Blue（强调） */
-  --blue-300: #a4c6f7;
-  --blue-400: #81adec;
-  --blue-500: #5d8cd7;
+  /* 朱红 / 朱砂（Seal，主强调） */
+  --seal-300: #e08a7e;
+  --seal-400: #cf5a4c;
+  --seal-500: #b8332a;
+  --seal-600: #9c2820;
+  --seal-700: #7d1f18;
 
-  /* Base */
   --black: #000000;
   --white: #ffffff;
+
+  /* 复用组件向后兼容原始色板（重映射到新主题，自动换肤） */
+  --blue-300: var(--seal-300);
+  --blue-400: var(--seal-400);
+  --blue-500: var(--seal-500);
+
+  --gray-50: var(--paper-50);
+  --gray-100: var(--paper-100);
+  --gray-200: var(--paper-200);
+  --gray-300: var(--ink-400);
+  --gray-700: var(--ink-700);
+  --gray-800: var(--ink-800);
+  --gray-900: var(--ink-900);
+  --gray-950: #1c1813;
 
   /* ══════════════ 语义 Token · 背景 ══════════════ */
   --color-root: var(--paper-100);
   --color-background: var(--paper-50);
-  --color-surface: var(--white);
+  --color-surface: #fffdf8;
   --color-cream: var(--paper-100);
-  --color-raised: var(--gray-50);
+  --color-raised: #f1e9da;
 
   /* ══════════════ 语义 Token · 前景 / 文字 ══════════════ */
-  --color-foreground: var(--gray-950);
-  --color-off-black: var(--gray-950);
-  --color-muted: var(--gray-500);
-  --color-dark-gray: var(--gray-600);
+  --color-foreground: var(--ink-900);
+  --color-off-black: #1c1813;
+  --color-muted: var(--ink-500);
+  --color-dark-gray: var(--ink-600);
 
   /* ══════════════ 语义 Token · 边框 ══════════════ */
   --color-border: var(--paper-200);
-  --color-border-dark: var(--gray-900);
+  --color-border-dark: var(--ink-900);
 
-  /* ══════════════ 语义 Token · 强调 / 交互 ══════════════ */
-  --color-blue: var(--blue-400);
-  --color-light-blue: var(--blue-300);
-  --color-focus: #81adec;
-  --color-selection: rgba(138, 185, 255, 0.5);
+  /* ══════════════ 语义 Token · 强调 / 交互（朱红印章红） ══════════════ */
+  --color-accent: var(--seal-500);
+  --color-accent-strong: var(--seal-600);
+  --color-accent-soft: rgba(184, 51, 42, 0.14);
+  --color-accent-ring: #d06a5d;
+  --color-focus: #d06a5d;
+  --color-selection: rgba(184, 51, 42, 0.18);
+
+  /* 向后兼容别名：复用组件（PaperToggle / PaperSlider / ColorCard / 链接）自动换肤 */
+  --color-blue: var(--color-accent);
+  --color-light-blue: var(--seal-300);
 
   /* ══════════════ 透明叠层（outline-first 的基础） ══════════════ */
   --fg-4: color-mix(in srgb, var(--color-foreground) 4%, transparent);
@@ -70,52 +89,55 @@
   --fg-10: color-mix(in srgb, var(--color-foreground) 10%, transparent);
   --fg-12: color-mix(in srgb, var(--color-foreground) 12%, transparent);
   --fg-20: color-mix(in srgb, var(--color-foreground) 20%, transparent);
+  --fg-30: color-mix(in srgb, var(--color-foreground) 30%, transparent);
   --fg-40: color-mix(in srgb, var(--color-foreground) 40%, transparent);
   --fg-50: color-mix(in srgb, var(--color-foreground) 50%, transparent);
   --fg-60: color-mix(in srgb, var(--color-foreground) 60%, transparent);
   --fg-70: color-mix(in srgb, var(--color-foreground) 70%, transparent);
   --fg-90: color-mix(in srgb, var(--color-foreground) 90%, transparent);
 
-  /* 卡片轮廓（亮色 6%，暗色媒体查询下切到 white/10） */
   --outline-card: var(--fg-6);
   --outline-hover: var(--fg-12);
 
   /* ══════════════ 语义 Token · 状态 ══════════════ */
-  --color-success-soft: #ecfdf5;
-  --color-success: #007a55;
-  --color-success-strong: #006045;
-  --color-danger-soft: #fef0f2;
-  --color-danger: #c70036;
-  --color-danger-strong: #a50036;
-  --color-warning-soft: #fff7ed;
-  --color-warning: #f97316;
-  --color-warning-strong: #c2410c;
+  --color-success-soft: #eaf6ee;
+  --color-success: #1f8a52;
+  --color-success-strong: #15693d;
+  --color-danger-soft: #fbeae7;
+  --color-danger: #c0392b;
+  --color-danger-strong: #9c2a1e;
+  --color-warning-soft: #fbf1e3;
+  --color-warning: #c7791a;
+  --color-warning-strong: #a45f10;
 
-  --color-fg-success: #047857;
-  --color-fg-danger: #be123c;
-  --color-fg-warning: #ea580c;
-  --color-fg-disabled: var(--gray-400);
+  --color-fg-success: #1f8a52;
+  --color-fg-danger: #c0392b;
+  --color-fg-warning: #b06a14;
+  --color-fg-disabled: var(--ink-400);
 
-  --color-border-success: #047857;
-  --color-border-danger: #be123c;
-  --color-border-warning: #ea580c;
+  --color-border-success: #1f8a52;
+  --color-border-danger: #c0392b;
+  --color-border-warning: #c7791a;
 
-  /* ══════════════ 圆角标尺（6px 基准，禁止任意值） ══════════════ */
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-base: 6px;
-  --radius-badge: 8px;
+  /* ══════════════ 圆角标尺（本轮重定义：3/5/8/10/14） ══════════════ */
+  --radius-xs: 3px;
+  --radius-sm: 5px;
+  --radius-base: 8px;
+  --radius-badge: 10px;
+  --radius-lg: 14px;
   --radius-full: 9999px;
 
-  /* ══════════════ 阴影（克制使用，优先 outline） ══════════════ */
-  --shadow-subtle: 0 1px 0 0 rgba(0, 0, 0, 0.08);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
-  --shadow-card: 0 0 0 1px rgba(0, 0, 0, 0.06);
-  --shadow-button: inset 0 1px rgba(255, 255, 255, 0.12), inset 0 -1px rgba(0, 0, 0, 0.12);
+  /* ══════════════ 阴影（本轮重定义：暖调、低饱和、柔和大扩散） ══════════════ */
+  --shadow-subtle: 0 1px 2px rgba(70, 50, 30, 0.05);
+  --shadow-sm: 0 2px 10px rgba(70, 50, 30, 0.08);
+  --shadow-card: 0 1px 3px rgba(70, 50, 30, 0.06), 0 8px 20px rgba(70, 50, 30, 0.05);
+  --shadow-button: inset 0 1px rgba(255, 255, 255, 0.22), inset 0 -1px rgba(0, 0, 0, 0.1);
+  --shadow-pop: 0 12px 32px rgba(70, 50, 30, 0.18);
 
   /* ══════════════ 排版 ══════════════ */
   --font-sans: 'Montserrat', system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei',
     'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', sans-serif;
+  --font-serif: 'Georgia', 'Songti SC', 'STSong', 'SimSun', serif;
   --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 
   --text-xs: 14px;
@@ -149,48 +171,21 @@
   --space-12: 48px;
   --space-15: 60px;
 
-  /*
-   * 卡片内边距。
-   * 说明：UI规则给出的 30/40/60px 面向营销落地页；本项目是**桌面高密度工具界面**
-   * （左侧 12 张参数卡片需同屏可达），故参数卡片使用 --card-padding-compact，
-   * 内容型区块（关于页 / 支付弹窗）仍使用 --card-padding。两者均为 4px 倍数。
-   */
-  --card-padding: 30px;
-  --card-padding-compact: 16px;
+  --card-padding: 28px;
+  --card-padding-compact: 14px;
 
   /* ══════════════ 动效 ══════════════ */
   --duration-micro: 100ms;
-  --duration-interactive: 150ms;
+  --duration-interactive: 160ms;
   --duration-content: 240ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-interactive: var(--duration-interactive) ease-out;
+  --transition-interactive: var(--duration-interactive) var(--ease-out);
 
   /* ══════════════ 布局 ══════════════ */
   --header-height: 56px;
-  --panel-width: 380px;
+  --panel-width: 360px;
+  --drawer-width: 360px;
   --hairline: 1px;
-
-  /* ════════════════════════════════════════════════════════════════
-   * 现代 Windows / Fluent 风格面板皮肤（左侧参数面板专用，见 ParamPanel.vue）
-   * 仅作用于 .panel 内部，右侧预览 / 弹窗不受影响。
-   * 复用整体主题 Token（--color-blue / --radius-* / --shadow-*）以保证视觉统一。
-   * ════════════════════════════════════════════════════════════════ */
-  --win-face: #ebebeb; /* 面板中性灰底 */
-  --win-surface: #ffffff; /* 卡片 / 输入白底 */
-  --win-surface-2: #f4f4f4; /* 悬停 / 选中浅底 */
-  --win-border: #d6d6d6; /* 1px 描边 */
-  --win-border-strong: #c2c2c2;
-  --win-text: #1f1f1f;
-  --win-text-dim: #5c5c5c;
-  --win-accent: var(--color-blue); /* 复用整体主题强调蓝 #81adec */
-  --win-accent-strong: var(--blue-500); /* 略深，用于填充主按钮 / 选中态 */
-  --win-accent-soft: var(--color-selection); /* rgba(138,185,255,.5) 浅蓝填充 */
-  --win-accent-ring: var(--color-focus); /* #81adec 聚焦环 */
-  --win-radius: var(--radius-base); /* 6px */
-  --win-radius-sm: var(--radius-sm); /* 4px */
-  --win-shadow: var(--shadow-card);
-  --win-shadow-hover: var(--shadow-sm);
-  --win-font: var(--font-sans);
 }
 
 @media (min-resolution: 2dppx) {
@@ -199,63 +194,56 @@
   }
 }
 
-/* ══════════════════════════ 暗色模式（自动解析） ══════════════════════════ */
+/* ════════════════════════════ 暗色模式（暖调墨色） ════════════════════════════ */
 @media (prefers-color-scheme: dark) {
   :root {
     /* 背景 */
-    --color-root: var(--gray-950);
-    --color-background: var(--gray-950);
-    --color-surface: var(--gray-900);
-    --color-cream: var(--gray-900);
-    --color-raised: var(--gray-950);
+    --color-root: #221d18;
+    --color-background: #1b1713;
+    --color-surface: #2a241e;
+    --color-cream: #221d18;
+    --color-raised: #221d18;
 
     /* 前景 */
-    --color-foreground: var(--paper-100);
-    --color-off-black: #010101;
-    --color-muted: var(--gray-400);
-    --color-dark-gray: var(--gray-600);
+    --color-foreground: #f1e9da;
+    --color-off-black: #0f0c09;
+    --color-muted: #a8998a;
+    --color-dark-gray: #857a6c;
 
     /* 边框 */
-    --color-border: var(--gray-800);
-    --color-border-dark: var(--gray-800);
+    --color-border: #3a322a;
+    --color-border-dark: #3a322a;
 
-    /* 轮廓：暗色下切到 white 10% / 15% */
-    --outline-card: rgba(255, 255, 255, 0.1);
-    --outline-hover: rgba(255, 255, 255, 0.18);
+    /* 朱红在暗色下提亮 */
+    --color-accent: var(--seal-400);
+    --color-accent-strong: var(--seal-500);
+    --color-accent-soft: rgba(207, 90, 76, 0.22);
+    --color-accent-ring: #d06a5d;
+    --color-focus: #d06a5d;
+    --color-selection: rgba(207, 90, 76, 0.26);
+    --color-blue: var(--color-accent);
+    --color-light-blue: var(--seal-300);
+
+    /* 轮廓：暗色切到 white 9% / 16% */
+    --outline-card: rgba(255, 255, 255, 0.09);
+    --outline-hover: rgba(255, 255, 255, 0.16);
 
     /* 状态 */
-    --color-success-soft: #002c22;
-    --color-success: #009966;
-    --color-success-strong: #007a55;
-    --color-danger-soft: #4d0218;
-    --color-warning-soft: #7c2d12;
+    --color-success-soft: #0f2c1d;
+    --color-success: #36b06a;
+    --color-success-strong: #1f8a52;
+    --color-danger-soft: #3a1813;
+    --color-warning-soft: #3a2a16;
 
-    --color-fg-success: #10b981;
-    --color-fg-danger: #f43f5e;
-    --color-fg-warning: #fbbf24;
-    --color-fg-disabled: var(--gray-600);
+    --color-fg-success: #4cc585;
+    --color-fg-danger: #ef6b5c;
+    --color-fg-warning: #e0a24a;
+    --color-fg-disabled: var(--ink-400);
 
-    --color-border-success: #065f46;
-    --color-border-warning: #f97316;
+    --color-border-success: #1f8a52;
+    --color-border-warning: #c7791a;
 
-    --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.1);
-
-    /* 现代 Windows / Fluent 皮肤 · 暗色（复用整体主题 token） */
-    --win-face: #2b2b2b;
-    --win-surface: #1f1f1f;
-    --win-surface-2: #2f2f2f;
-    --win-border: #3a3a3a;
-    --win-border-strong: #4a4a4a;
-    --win-text: #e8e8e8;
-    --win-text-dim: #b0b0b0;
-    --win-accent: var(--color-blue);
-    --win-accent-strong: var(--blue-500);
-    --win-accent-soft: rgba(129, 173, 236, 0.22);
-    --win-accent-ring: var(--color-focus);
-    --win-radius: var(--radius-base);
-    --win-radius-sm: var(--radius-sm);
-    --win-shadow: var(--shadow-card);
-    --win-shadow-hover: var(--shadow-sm);
-    --win-font: var(--font-sans);
+    --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.08);
+    --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.5);
   }
 }

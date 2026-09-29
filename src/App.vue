@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from 'vue';
+import { onMounted, onBeforeUnmount, provide, ref } from 'vue';
 import AppHeader from './components/layout/AppHeader.vue';
 import ToastHost from './components/layout/ToastHost.vue';
 import PaymentDialog from './components/payment/PaymentDialog.vue';
@@ -9,6 +9,16 @@ import { BOOTING } from './core/copy';
 
 const { ensureLoaded, dispose } = useUnlock();
 const booted = ref<boolean>(false);
+
+/**
+ * 参数抽屉开合（纯 UI 状态，非业务数据）。
+ * 经 provide 下发：顶栏负责切换，设计器负责消费显隐。
+ */
+const drawerOpen = ref<boolean>(true);
+provide('drawerOpen', drawerOpen);
+provide('toggleDrawer', (): void => {
+  drawerOpen.value = !drawerOpen.value;
+});
 
 onMounted(async () => {
   await ensureLoaded();
@@ -25,7 +35,7 @@ function handleDialogClose(): void {
 </script>
 
 <template>
-  <div class="app-shell">
+  <div class="app-shell" :class="{ 'is-drawer-open': drawerOpen }">
     <AppHeader />
     <main class="app-main">
       <RouterView v-if="booted" />
@@ -40,13 +50,6 @@ function handleDialogClose(): void {
 .app-shell {
   display: flex;
   flex-direction: column;
-  /*
-   * ★ 关键：必须是「确定高度」而非 `min-height`。
-   * 若用 `min-height: 100vh`，内容（参数面板 12 张卡片）会撑高整条 flex 链
-   * （app-shell→app-main→designer→panel 一路变到内容总高），使 `min-height:0`
-   * 失去约束基准 —— 面板不可滚动、预览因被居中到超高画布之外而不可见。
-   * 改为确定高度后，flex 子项在 100vh 内分配，`min-height:0` 生效、内部滚动恢复。
-   */
   height: 100vh;
   background: var(--color-root);
 }

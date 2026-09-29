@@ -9,7 +9,7 @@
  */
 
 /** 应用与品牌。 */
-export const APP_NAME = '印章生成器';
+export const APP_NAME = '篆刻印章生成器';
 export const NAV_DESIGNER = '设计器';
 export const NAV_ABOUT = '关于';
 
@@ -59,6 +59,15 @@ export const BTN_PAY_RETRY = '重新发起';
 export const BTN_PAY_CLOSE = '关闭';
 export const PAY_NOTICE = '支付完成后请勿立即关闭窗口，系统将在数秒内自动确认。';
 
+/** 审核测试码兑换（微软商店审核员专用入口，10.3.3 App Is Testable）。 */
+export const REVIEW_CODE_LABEL = '审核测试码';
+export const REVIEW_CODE_PLACEHOLDER = '请输入测试码';
+export const BTN_REVIEW_CODE_REDEEM = '兑换开通';
+export const REVIEW_CODE_CHECKING = '正在验证测试码…';
+export const REVIEW_CODE_SUCCESS = '测试码验证通过，已开通导出功能（完整版）';
+export const REVIEW_CODE_INVALID = '测试码无效，请核对后重试';
+export const REVIEW_CODE_FAILED = '验证失败，请稍后重试';
+
 /** 参数面板卡片标题。 */
 export const CARD_SHAPE = '形状与类型';
 export const CARD_BORDER = '边框';
@@ -99,9 +108,9 @@ export const BTN_RESET = '恢复默认';
 export const BTN_BACK = '返回设计器';
 
 /** 关于页。 */
-export const ABOUT_TITLE = '关于 印章生成器';
+export const ABOUT_TITLE = '关于 篆刻印章生成器';
 export const ABOUT_INTRO =
-  '印章生成器是一款完全本地运行的印章设计工具，支持公章、方章与自由排版三种版式，可实时预览做旧效果，并导出高清 PNG 与矢量 SVG。';
+  '篆刻印章生成器是一款完全本地运行的印章设计工具，支持公章、方章与自由排版三种版式，可实时预览做旧效果，并导出高清 PNG 与矢量 SVG。';
 export const ABOUT_OFFLINE = '本应用不上传任何设计内容，全部渲染均在本机完成。';
 export const ABOUT_VERSION_LABEL = '版本';
 export const ABOUT_PRODUCT_LABEL = '产品名称';

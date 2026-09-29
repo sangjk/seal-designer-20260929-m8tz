@@ -167,7 +167,7 @@ onBeforeUnmount(() => {
 .stage__tag {
   font-size: 12px;
   line-height: 16px;
-  color: var(--color-blue);
+  color: var(--color-accent-strong);
   padding: 1px 8px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-badge);

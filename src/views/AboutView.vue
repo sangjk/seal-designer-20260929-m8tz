@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { onMounted, ref } from 'vue';
 import PaperButton from '@/components/ui/PaperButton.vue';
 import PaperCard from '@/components/ui/PaperCard.vue';
+import brandLogo from '@/assets/brand-logo.png';
 import {
   ABOUT_DISCLAIMER_TITLE,
   ABOUT_INTRO,
@@ -57,6 +58,9 @@ onMounted(async () => {
 <template>
   <div class="about">
     <PaperCard :title="ABOUT_TITLE" class="about__card">
+      <div class="about__brand">
+        <img class="about__logo" :src="brandLogo" alt="" aria-hidden="true" />
+      </div>
       <p class="about__intro">{{ ABOUT_INTRO }}</p>
       <p class="about__offline">{{ ABOUT_OFFLINE }}</p>
 
@@ -100,6 +104,22 @@ onMounted(async () => {
   width: 100%;
   max-width: 560px;
   align-self: flex-start;
+}
+
+.about__brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-3);
+}
+
+.about__logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-cream);
+  padding: 6px;
+  box-shadow: var(--shadow-card);
 }
 
 .about__intro,

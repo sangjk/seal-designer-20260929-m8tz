@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
 import PaperButton from '@/components/ui/PaperButton.vue';
 import PaperModal from '@/components/ui/PaperModal.vue';
 import PaperSegmented, { type SegmentedOption } from '@/components/ui/PaperSegmented.vue';
@@ -9,6 +10,7 @@ import { useToast } from '@/composables/useToast';
 import {
   BTN_PAY_CLOSE,
   BTN_PAY_RETRY,
+  BTN_REVIEW_CODE_REDEEM,
   PAY_AMOUNT_LABEL,
   PAY_CHANNEL_ALIPAY,
   PAY_CHANNEL_WECHAT,
@@ -18,6 +20,11 @@ import {
   PAY_SUBTITLE,
   PAY_SUCCESS,
   PAY_TITLE,
+  REVIEW_CODE_FAILED,
+  REVIEW_CODE_INVALID,
+  REVIEW_CODE_LABEL,
+  REVIEW_CODE_PLACEHOLDER,
+  REVIEW_CODE_SUCCESS,
   payCountdownText,
   priceText,
 } from '@/core/copy';
@@ -137,6 +144,44 @@ function handleRetry(): void {
   void payment.open(session.value.channel);
 }
 
+/**
+ * 审核测试码兑换（微软商店审核员专用，认证策略 10.3.3「App Is Testable」）。
+ *
+ * ★ 与支付成功完全同链路：校验在 Rust（`redeem_review_code`），
+ *   解锁写盘与 `unlock:changed` 广播也在 Rust；前端只做极薄的输入与结果提示。
+ *   码值不下发前端、不出现在任何 UI 文案中，仅经 Partner Center 认证备注提交。
+ */
+const reviewCode = ref<string>('');
+
+/** 兑换请求进行中（防重复提交）。 */
+const redeeming = ref<boolean>(false);
+
+/** 兑换测试码：成功 → 与支付成功一样延迟关闭并续做导出；失败 → 提示无效。 */
+async function handleRedeem(): Promise<void> {
+  const code = reviewCode.value.trim();
+  if (code.length === 0 || redeeming.value) {
+    return;
+  }
+  redeeming.value = true;
+  try {
+    const ok = await invoke<boolean>('redeem_review_code', { code });
+    if (ok) {
+      toast.success(REVIEW_CODE_SUCCESS);
+      clearSuccessTimer();
+      successTimer = window.setTimeout(() => {
+        successTimer = null;
+        notifyUnlocked();
+      }, SUCCESS_HOLD_MS);
+      return;
+    }
+    toast.error(REVIEW_CODE_INVALID);
+  } catch {
+    toast.error(REVIEW_CODE_FAILED);
+  } finally {
+    redeeming.value = false;
+  }
+}
+
 watch(
   () => props.open,
   (isOpen, wasOpen) => {
@@ -201,6 +246,31 @@ onBeforeUnmount(() => {
     </p>
 
     <p v-if="isWaiting" class="pay__notice">{{ PAY_NOTICE }}</p>
+
+    <div class="pay__review">
+      <label class="pay__review-label" for="review-code-input">{{ REVIEW_CODE_LABEL }}</label>
+      <div class="pay__review-row">
+        <input
+          id="review-code-input"
+          v-model="reviewCode"
+          class="pay__review-input"
+          type="text"
+          :placeholder="REVIEW_CODE_PLACEHOLDER"
+          autocomplete="off"
+          spellcheck="false"
+          :disabled="redeeming"
+          @keyup.enter="handleRedeem"
+        />
+        <PaperButton
+          variant="secondary"
+          size="sm"
+          :disabled="redeeming || reviewCode.trim().length === 0"
+          @click="handleRedeem"
+        >
+          {{ BTN_REVIEW_CODE_REDEEM }}
+        </PaperButton>
+      </div>
+    </div>
 
     <template #footer>
       <PaperButton v-if="canRetry" variant="primary" size="sm" @click="handleRetry">
@@ -376,5 +446,49 @@ onBeforeUnmount(() => {
   font-size: 12px;
   line-height: 16px;
   color: var(--fg-60);
+}
+
+.pay__review {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--outline-card);
+}
+
+.pay__review-label {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--fg-60);
+}
+
+.pay__review-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pay__review-input {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--outline-card);
+  border-radius: var(--radius-base);
+  background-color: var(--white);
+  color: var(--color-foreground);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 30px;
+  outline: none;
+}
+
+.pay__review-input:focus {
+  border-color: var(--fg-30);
+}
+
+.pay__review-input:disabled {
+  opacity: 0.6;
 }
 </style>

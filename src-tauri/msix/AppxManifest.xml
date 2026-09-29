@@ -34,18 +34,18 @@
 
   <!-- 包身份：三项均来自微软合作伙伴中心，永不改动 -->
   <Identity
-    Name="sangkl.30724BA61D061"
-    Publisher="CN=3F86E209-E919-4DFD-BBFE-3B881A180019"
+    Name="ziyoukaifazhe.2588078BEB980"
+    Publisher="CN=B6B69D2F-F985-4638-A792-512943132392"
     Version="1.0.0.0"
     ProcessorArchitecture="x64" />
 
   <Properties>
     <!-- 用户在商店与「应用」列表里看到的名字 -->
-    <DisplayName>印章生成器</DisplayName>
+    <DisplayName>篆刻印章生成器</DisplayName>
     <!-- 必须与合作伙伴中心账户的发布者显示名完全一致，空值会被包接受验证拒收 -->
-    <PublisherDisplayName>sangkl</PublisherDisplayName>
+    <PublisherDisplayName>ziyoukaifazhe</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
-    <Description>完全本地离线的印章设计与导出工具，支持公章、方章与自由排版，含做旧效果与高清导出。</Description>
+    <Description>完全本地离线的篆刻印章设计与导出工具，支持公章、方章与自由排版，含做旧效果与高清导出。</Description>
   </Properties>
 
   <!-- 至少声明一种支持语言，否则包接受验证报「必须至少声明一种支持的语言」 -->
@@ -79,8 +79,8 @@
       Executable="seal-designer.exe"
       EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
-        DisplayName="印章生成器"
-        Description="完全本地离线的印章设计与导出工具，支持公章、方章与自由排版，含做旧效果与高清导出。"
+        DisplayName="篆刻印章生成器"
+        Description="完全本地离线的篆刻印章设计与导出工具，支持公章、方章与自由排版，含做旧效果与高清导出。"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png" />
